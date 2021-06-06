@@ -12,5 +12,8 @@ export default props => (
         <Route path="/admin/dashboard/products">
             <Products />
         </Route>
+        <Route path="/">
+            <Products />
+        </Route>
     </Switch>
 )
