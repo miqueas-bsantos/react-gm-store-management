@@ -11,7 +11,7 @@
 // import 'modules/admin-lte/plugins/iCheck/flat/blue.css'
 
 // import 'modules/jquery/dist/jquery.min.js'
-// import 'modules/bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/css/bootstrap-grid.min.css';
 // import 'modules/bootstrap/dist/js/bootstrap.min.js'
 // import 'modules/bootstrap/js/src/popover.js'
 // import 'modules/bootstrap/dist/js/bootstrap.bundle.min.js';

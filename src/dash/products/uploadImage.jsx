@@ -1,6 +1,8 @@
 import React from 'react'
 import { Upload, Modal } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { URL_PRODUCTS } from '../../common/template/urls'
+import axios from 'axios'
 
 function getBase64(file) {
   return new Promise((resolve, reject) => {
@@ -10,6 +12,11 @@ function getBase64(file) {
     reader.onerror = error => reject(error);
   });
 }
+function uuidv4() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
 
 export default class PicturesWall extends React.Component {
   state = {
@@ -17,42 +24,6 @@ export default class PicturesWall extends React.Component {
     previewImage: '',
     previewTitle: '',
     fileList: [
-      {
-        uid: '-1',
-        name: 'image.png',
-        status: 'done',
-        url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-      },
-      {
-        uid: '-2',
-        name: 'image.png',
-        status: 'done',
-        url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-      },
-      {
-        uid: '-3',
-        name: 'image.png',
-        status: 'done',
-        url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-      },
-      {
-        uid: '-4',
-        name: 'image.png',
-        status: 'done',
-        url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-      },
-      {
-        uid: '-xxx',
-        percent: 50,
-        name: 'image.png',
-        status: 'uploading',
-        url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-      },
-      {
-        uid: '-5',
-        name: 'image.png',
-        status: 'error',
-      },
     ],
   };
 
@@ -83,7 +54,43 @@ export default class PicturesWall extends React.Component {
     return (
       <>
         <Upload
-          action="http://localhost:8000/products/images"
+          customRequest={(componentsData) => {
+            let formData = new FormData();
+            formData.append('file', componentsData.file);
+            formData.append('uuid', uuidv4());
+            formData.append('domain', 'POST');
+            formData.append('filename', componentsData.file.name);
+
+            fetch(`${URL_PRODUCTS}/images`, {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json'
+              },
+              body: formData
+            })
+          .then(response => response.json())
+          .then(data => {
+            console.log(data)
+            componentsData.onSuccess()
+            let files = this.state.fileList
+            files.map(file => {
+              if (file.name === data.data.origin) {
+                file.name = data.data.name
+              }
+            })
+            // files.push(data.data)
+            // console.log(files)
+            // this.setState({fileList: files})
+
+            axios.put(`${URL_PRODUCTS}/images`, {path: data.data.name, product_id: this.props.product.id})
+                      .then(resp => console.log(resp))
+                      .catch(error => console.log(error))            
+          })
+          .catch(error => {
+              console.log('Error fetching profile ' + error)
+              componentsData.onError("Error uploading image")
+            })      
+          }}
           listType="picture-card"
           fileList={fileList}
           onPreview={this.handlePreview}
