@@ -34,10 +34,10 @@ const Products = (props) => {
     const columns = [
         {
           title: 'Produto',
-          dataIndex: 'imageUri',
-          key: 'imageUri',
+          dataIndex: 'imagesUriDetail',
+          key: 'imagesUriDetail',
           width: 100,
-          render: record => <img src={record} className="m-1" width="45" height="60" alt="" />
+          render: record => record.length ? <img src={record[0].path} className="m-1" width="45" height="60" alt="" />: null
         },
         {
           title: 'Name',
@@ -81,15 +81,14 @@ const Products = (props) => {
       }),
     };
 
-
     useEffect(function () {
       axios.get(`${URL_PRODUCTS}?category=all&order_by=default`)
            .then(resp => {
             setData(resp.data.data)
             console.log(resp.data.data)
            })
-    }, [])      
-    
+    }, [])   
+
 
     return (
         <div>

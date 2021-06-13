@@ -17,32 +17,40 @@ function uuidv4() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
+function split_images(images) { 
+  return images.map(file => {
+        file.url = file.path
+        file.uid = file.path.split("/")
+        if (file.uid.length === 4) {
+          file.uid = (file.uid[3])
+          file.uid = file.uid.split(".")[0]
+        } else {
+          file.uid = file.path.split(".")[0]
+        }
+        
+        return file
+    })
+  
+}
 
 export default class PicturesWall extends React.Component { 
   state = {
     previewVisible: false,
     previewImage: '',
     previewTitle: '',
-    fileList: this.props.product.imagesUriDetail.map(file => {
-      file.url = file.path
-      file.uid = uuidv4()
-      return file
-    })
+    fileList: split_images(this.props.product.imagesUriDetail)
   };
 
   componentDidUpdate(prevProps) {
     // Uso típico, (não esqueça de comparar as props):
     if (this.props.product.id !== prevProps.product.id) {
-      const files = this.props.product.imagesUriDetail.map(file => {
-        file.url = file.path
-        file.uid = uuidv4()
-        return file
-      })
-      
-      this.setState({fileList: files})
+      axios.get(`${URL_PRODUCTS}/images/${this.props.product.id}`)
+            .then(resp => {
+              console.log(resp.data.data)
+              this.setState({fileList: resp.data.data})
+            }) 
     }
   }
-
 
   handleCancel = () => this.setState({ previewVisible: false });
 
@@ -57,15 +65,15 @@ export default class PicturesWall extends React.Component {
       previewTitle: file.name || file.url.substring(file.url.lastIndexOf('/') + 1),
     });
   };
-
-  handleChange = ({ file, fileList }) => { 
-    this.setState({ fileList });
+  
+  handleChange = ({ file, fileList }) => {
+    this.setState({ fileList});
   }
+  
   handleRemove = (file) => {
-    console.log("DELETE", file, this.state.fileList)
-    // axios.delete(`${URL_PRODUCTS}/images/${file.id}`)
-    //           .then(resp => console.log(resp))
-    //           .catch(error => console.log(error))  
+    axios.delete(`${URL_PRODUCTS}/images/${this.props.product.id}/${file.uid}`)
+              .then(resp => console.log(resp))
+              .catch(error => console.log(error))  
   }
 
   render() {
@@ -82,47 +90,22 @@ export default class PicturesWall extends React.Component {
           customRequest={(componentsData) => {
             let formData = new FormData();
             formData.append('file', componentsData.file);
-            formData.append('uuid', uuidv4());
+            // formData.append('uuid', uuidv4());
             formData.append('domain', 'POST');
             formData.append('filename', componentsData.file.name);
-
             fetch(`${URL_PRODUCTS}/images`, {
               method: 'POST',
               headers: {
-                Accept: 'application/json'
+                Accept: 'multipart/form-data',
+                Uid: componentsData.file.uid,
+                productId: this.props.product.id
               },
               body: formData
             })
           .then(response => response.json())
           .then(data => {
             console.log(data)
-            
-            let files = this.state.fileList
-            files.map(file => {
-              if (file.name === data.data.origin) {
-                file.name = data.data.name
-                return file
-              }
-            })
-            // files.push(data.data)
-            console.log(files)
-            // this.setState({fileList: files})
-
-            axios.put(`${URL_PRODUCTS}/images`, {path: data.data.name, product_id: this.props.product.id})
-                      .then(resp => {
-                        console.log("relationship", resp.data.data)
-                        files.map(file => {
-                          if (file.name === resp.data.data.name) {
-                            console.log(file.name, resp.data.data.name)
-                            file.id = resp.data.data.id
-                            return file
-                          }
-                        })
-                        this.setState({fileList: files})
-                        console.log(fileList)
-                        componentsData.onSuccess()
-                      })
-                      .catch(error => console.log(error))            
+            componentsData.onSuccess()
           })
           .catch(error => {
               console.log('Error fetching profile ' + error)
