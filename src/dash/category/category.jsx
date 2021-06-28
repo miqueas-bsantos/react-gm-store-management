@@ -1,7 +1,9 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Table, Input, Button, Popconfirm, Form } from 'antd';
-const EditableContext = React.createContext(null);
+import { URL_PRODUCTS } from '../../common/template/urls';
+import axios from 'axios';
 import './category.css';
+const EditableContext = React.createContext(null);
 
 const EditableRow = ({ index, ...props }) => {
   const [form] = Form.useForm();
@@ -88,27 +90,25 @@ class EditableTable extends React.Component {
     super(props);
     this.columns = [
       {
-        title: 'name',
-        dataIndex: 'name',
+        title: 'Id',
+        dataIndex: 'id',
         width: '30%',
-        editable: true
+        editable: false,
+        disabled: true
       },
       {
-        title: 'age',
-        dataIndex: 'age'
+        editable: true,
+        title: 'Categoria',
+        dataIndex: 'category'
       },
       {
-        title: 'address',
-        dataIndex: 'address'
-      },
-      {
-        title: 'operation',
+        title: 'Operação',
         dataIndex: 'operation',
         render: (_, record) =>
           this.state.dataSource.length >= 1 ? (
             <Popconfirm
               title="Sure to delete?"
-              onConfirm={() => this.handleDelete(record.key)}
+              onConfirm={() => this.handleDelete(record.id)}
             >
               <a>Delete</a>
             </Popconfirm>
@@ -116,50 +116,35 @@ class EditableTable extends React.Component {
       }
     ];
     this.state = {
-      dataSource: [
-        {
-          key: '0',
-          name: 'Edward King 0',
-          age: '32',
-          address: 'London, Park Lane no. 0'
-        },
-        {
-          key: '1',
-          name: 'Edward King 1',
-          age: '32',
-          address: 'London, Park Lane no. 1'
-        }
-      ],
-      count: 2
+      dataSource: []
     };
   }
 
-  handleDelete = key => {
-    const dataSource = [...this.state.dataSource];
-    this.setState({
-      dataSource: dataSource.filter(item => item.key !== key)
+  componentWillMount() {
+    axios.get(`${URL_PRODUCTS}/category`).then(resp => {
+      console.log(resp.data.data);
+      this.setState({ ...this.state, dataSource: resp.data.data });
+    });
+  }
+
+  handleDelete = id => {
+    axios.delete(`${URL_PRODUCTS}/category/${id}`).then(resp => {
+      this.setState({ ...this.state, dataSource: resp.data.data });
     });
   };
   handleAdd = () => {
     const { count, dataSource } = this.state;
     const newData = {
-      key: count,
-      name: `Edward King ${count}`,
-      age: '32',
-      address: `London, Park Lane no. ${count}`
+      category: `Nova Categoria`
     };
-    this.setState({
-      dataSource: [...dataSource, newData],
-      count: count + 1
+    axios.post(`${URL_PRODUCTS}/category`, newData).then(resp => {
+      this.setState({ ...this.state, dataSource: resp.data.data });
     });
   };
   handleSave = row => {
-    const newData = [...this.state.dataSource];
-    const index = newData.findIndex(item => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, { ...item, ...row });
-    this.setState({
-      dataSource: newData
+    console.log('chamou', row);
+    axios.put(`${URL_PRODUCTS}/category`, row).then(resp => {
+      this.setState({ ...this.state, dataSource: resp.data.data });
     });
   };
 
@@ -196,9 +181,10 @@ class EditableTable extends React.Component {
             marginBottom: 16
           }}
         >
-          Add a row
+          Adicionar nova Categoria
         </Button>
         <Table
+          rowKey={record => record.id}
           components={components}
           rowClassName={() => 'editable-row'}
           bordered
