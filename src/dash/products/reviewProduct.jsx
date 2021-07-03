@@ -29,9 +29,11 @@ const ReviewProduct = props => {
   };
 
   useEffect(() => {
+    // console.log(props.product.id, formProduct.getFieldsValue().id)
+    // console.log(props.product.id !== formProduct.getFieldsValue().id)
     setFormState(props.product);
-    if (formRef.current) {
-      formProduct.setFieldsValue(formState);
+    if (formRef.current && props.product.id !== formProduct.getFieldsValue().id) {
+      formProduct.setFieldsValue(props.product);
     }
   }, [formRef, props.product]);
 

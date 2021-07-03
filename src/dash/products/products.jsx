@@ -25,9 +25,11 @@ const suffix = (
   <div
     style={{
       fontSize: 16,
-      color: '#1890ff'
+      color: '#00'
     }}
-  />
+  >
+    Adicionar Novo produto
+  </div>
 );
 
 const Products = props => {
@@ -81,7 +83,7 @@ const Products = props => {
     onChange: (selectedRowKeys, selectedRows) => {
       // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
       setCurrentProduct(selectedRows[0]);
-      // console.log(currentProduct)
+      console.log(selectedRows[0])
     },
     getCheckboxProps: record => ({
       disabled: record.name === 'Disabled User', // Column configuration not to be checked
@@ -92,16 +94,70 @@ const Products = props => {
   useEffect(function() {
     axios.get(`${URL_PRODUCTS}?category=all&order_by=default`).then(resp => {
       setData(resp.data.data);
-      console.log(resp.data.data);
+      // console.log(resp.data.data);
     });
   }, []);
+
+  const filterProduct = value => {};
+
+  const createProduct = name => {
+    const product = {
+      code: null,
+      imagesUriDetail: [],
+      title: name,
+      content: name,
+      price: 0,
+      currency: 'BRL',
+      sizes: [
+        {
+          size: 'PP',
+          quantity: 0
+        },
+        {
+          size: 'P',
+          quantity: 0
+        },
+        {
+          size: 'M',
+          quantity: 0
+        },
+        {
+          size: 'G',
+          quantity: 0
+        },
+        {
+          size: 'EG',
+          quantity: 0
+        },
+        {
+          size: 'EGG',
+          quantity: 0
+        }
+      ],
+      category: null,
+      quantity: 0,
+      discount: [],
+      category: { id: 1 },
+      brand: 'GM',
+      tags: [],
+      isActive: true,
+      plan: 0
+    };
+    console.log(product);
+    axios.post(`${URL_PRODUCTS}`, product).then(resp => {
+      setData(resp.data.data);
+      setCurrentProduct({})
+      // console.log(resp.data.data);
+    });
+  };
 
   return (
     <div>
       <Search
         placeholder="Nome do Produto"
         className="mb-3 w-50"
-        onSearch={value => console.log(value)}
+        onSearch={value => createProduct(value)}
+        onChange={value => filterProduct(value.target.value)}
         enterButton={suffix}
       />
       <Table
@@ -115,7 +171,7 @@ const Products = props => {
         pagination={{}}
         scroll={{ y: 500 }}
       />
-      <ReviewProduct product={currentProduct} />
+      <ReviewProduct product={{...currentProduct, row: rowSelection}} />
       {currentProduct.id >= 0 ? <UploadImage product={currentProduct} /> : null}
     </div>
   );

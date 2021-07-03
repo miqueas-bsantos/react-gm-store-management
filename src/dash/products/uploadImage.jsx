@@ -46,7 +46,7 @@ export default class PicturesWall extends React.Component {
     if (this.props.product.id !== prevProps.product.id) {
       axios.get(`${URL_PRODUCTS}/images/${this.props.product.id}`)
             .then(resp => {
-              console.log(resp.data.data)
+              // console.log(resp.data.data)
               this.setState({fileList: resp.data.data})
             }) 
     }
