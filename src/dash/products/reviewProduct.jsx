@@ -20,6 +20,7 @@ const ReviewProduct = props => {
   const formRef = useRef(null);
   const [formState, setFormState] = useState(props.product);
   const [categories, setCategories] = useState([]);
+  const [currentCategory, setCurrentCategory] = useState({});
 
   const onFinish = values => {
     console.log('Success:', {
@@ -39,16 +40,19 @@ const ReviewProduct = props => {
       .catch(error => console.log(error));
   };
 
+  const getCurrentCategory = id => {
+    const category = categories.filter(cat => cat.id === id)[0];
+    // setCurrentCategory()
+    return category;
+  };
+
   const getCategories = () => {
     axios.get(`${URL_PRODUCTS}/category`).then(resp => {
       setCategories(resp.data.data);
-      // console.log('categories', categories);
     });
   };
 
   useEffect(() => {
-    // console.log(props.product.id, formProduct.getFieldsValue().id)
-    // console.log(props.product.id !== formProduct.getFieldsValue().id)
     setFormState(props.product);
     getCategories();
     if (
@@ -97,15 +101,40 @@ const ReviewProduct = props => {
           <Form.Item label="Código do produto" name="code">
             <Input />
           </Form.Item>
-          <Form.Item
-            label="Qtd no Estoque"
-            name="quantity"
-            rules={[{ required: true, message: 'Este campo é obrigatório' }]}
-          >
-            <Input />
-          </Form.Item>
+
           <Form.Item
             label="Categoria"
+            // name="category"
+            rules={[{ required: true, message: 'Este campo é obrigatório' }]}
+          >
+            <Select
+              onChange={value => {
+                const current = categories.filter(cat => cat.id === value);
+                setCurrentCategory(current);
+                setFormState({
+                  ...formState,
+                  subcategory: {
+                    ...formState.subcategory,
+                    category_id: value
+                  }
+                });
+              }}
+              defaultValue={
+                getCurrentCategory(props.product.subcategory.category_id).name
+              }
+            >
+              {categories.map((cat, index) => {
+                return (
+                  <Select.Option key={index} value={cat.id}>
+                    {cat.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="SubCategoria"
             // name="category"
             rules={[{ required: true, message: 'Este campo é obrigatório' }]}
           >
@@ -113,23 +142,26 @@ const ReviewProduct = props => {
               onChange={value =>
                 setFormState({
                   ...formState,
-                  category: {
-                    ...formState.category,
+                  subcategory: {
+                    ...formState.subcategory,
                     id: value
                   }
                 })
               }
-              defaultValue={formState.category.category}
+              defaultValue={formState.subcategory.name}
             >
-              {categories.map((cat, index) => {
+              {getCurrentCategory(
+                formState.subcategory.category_id
+              ).subcategories.map((cat, index) => {
                 return (
                   <Select.Option key={index} value={cat.id}>
-                    {cat.category}
+                    {cat.name}
                   </Select.Option>
                 );
               })}
             </Select>
           </Form.Item>
+
           <Form.Item label="Conteúdo" name="content">
             <Input.TextArea />
           </Form.Item>
@@ -145,7 +177,6 @@ const ReviewProduct = props => {
               }
             >
               {formState.isActive ? 'Ativo' : 'Inativo'}
-              {console.log(formState.isActive)}
             </Checkbox>
           </Form.Item>
           <Form.Item {...tailLayout}>

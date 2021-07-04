@@ -58,10 +58,10 @@ const Products = props => {
     },
     {
       title: 'Categoria',
-      dataIndex: 'category',
-      key: 'category',
+      dataIndex: 'subcategory',
+      key: 'subcategory',
       width: '30%',
-      render: record => `${record.category}`
+      render: record => `${record.name}`
     },
     {
       title: 'Preço',
@@ -75,8 +75,13 @@ const Products = props => {
       width: '10%',
       dataIndex: 'delete',
       // key: 'delete',
-      render: (_, record) => (<Button danger onClick={() => deleteProduct(record.id)}> Deletar </Button>)
-    }    
+      render: (_, record) => (
+        <Button danger onClick={() => deleteProduct(record.id)}>
+          {' '}
+          Deletar{' '}
+        </Button>
+      )
+    }
   ];
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState({
@@ -99,11 +104,11 @@ const Products = props => {
     })
   };
 
-  const deleteProduct = (id) => {
+  const deleteProduct = id => {
     axios.delete(`${URL_PRODUCTS}/${id}`).then(resp => {
       setData(resp.data.data);
     });
-  }
+  };
 
   useEffect(function() {
     axios.get(`${URL_PRODUCTS}?category=all&order_by=default`).then(resp => {
@@ -185,7 +190,7 @@ const Products = props => {
         pagination={{}}
         scroll={{ y: 500 }}
       />
-      <ReviewProduct product={currentProduct} setData={setData}/>
+      <ReviewProduct product={currentProduct} setData={setData} />
       {currentProduct.id >= 0 ? <UploadImage product={currentProduct} /> : null}
     </div>
   );
