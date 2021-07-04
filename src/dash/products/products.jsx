@@ -172,7 +172,7 @@ const Products = props => {
         pagination={{}}
         scroll={{ y: 500 }}
       />
-      <ReviewProduct product={currentProduct} />
+      <ReviewProduct product={currentProduct} setData={setData}/>
       {currentProduct.id >= 0 ? <UploadImage product={currentProduct} /> : null}
     </div>
   );
