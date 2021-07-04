@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Table, Input } from 'antd';
+import { Table, Input, Button } from 'antd';
 import ReviewProduct from './reviewProduct';
 import './product.css';
 import { URL_PRODUCTS } from '../../common/template/urls';
@@ -69,7 +69,14 @@ const Products = props => {
       key: 'price',
       width: '30%',
       render: record => `R$ ${record}`
-    }
+    },
+    {
+      title: 'Delete',
+      width: '10%',
+      dataIndex: 'delete',
+      // key: 'delete',
+      render: (_, record) => (<Button danger onClick={() => deleteProduct(record.id)}> Deletar </Button>)
+    }    
   ];
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState({
@@ -91,6 +98,12 @@ const Products = props => {
       name: record.name
     })
   };
+
+  const deleteProduct = (id) => {
+    axios.delete(`${URL_PRODUCTS}/${id}`).then(resp => {
+      setData(resp.data.data);
+    });
+  }
 
   useEffect(function() {
     axios.get(`${URL_PRODUCTS}?category=all&order_by=default`).then(resp => {
