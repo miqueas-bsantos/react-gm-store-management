@@ -60,7 +60,8 @@ const Products = props => {
       title: 'Categoria',
       dataIndex: 'category',
       key: 'category',
-      width: '30%'
+      width: '30%',
+      render: record => `${record.category}`
     },
     {
       title: 'Preço',

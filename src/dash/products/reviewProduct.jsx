@@ -52,6 +52,13 @@ const ReviewProduct = props => {
     if (
       formRef.current &&
       props.product.id !== formProduct.getFieldsValue().id
+          ) {
+                formProduct.setFieldsValue(props.product);
+                    }
+                      }, [formRef, props.product]);
+                      
+                        const onFinishFailed = errorInfo => {
+                        ().id
     ) {
       formProduct.setFieldsValue(props.product);
     }
@@ -137,7 +144,7 @@ const ReviewProduct = props => {
             valuePropName={formState.isActive ? 'checked' : null}
           >
             <Checkbox>
-              {formState.isActive ? 'Desativar Produto' : 'Ativar Produto'}
+              {formState.isActive ? 'Ativo' : 'Inativo'}
             </Checkbox>
           </Form.Item>
           <Form.Item {...tailLayout}>
