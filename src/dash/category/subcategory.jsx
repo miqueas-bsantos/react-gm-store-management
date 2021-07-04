@@ -2,10 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Table, Input, Button, Popconfirm, Form } from 'antd';
 import { URL_PRODUCTS } from '../../common/template/urls';
 import axios from 'axios';
-import SubCategory from './subcategory'
 import './category.css';
-
-
 const EditableContext = React.createContext(null);
 
 const EditableRow = ({ index, ...props }) => {
@@ -92,15 +89,15 @@ class EditableTable extends React.Component {
   constructor(props) {
     super(props);
     this.columns = [
-      {
-        title: 'Ordem',
-        dataIndex: 'order',
-        width: '30%',
-        editable: true
-      },
+      // {
+      //   title: 'Ordem',
+      //   dataIndex: 'order',
+      //   width: '30%',
+      //   editable: true
+      // },
       {
         editable: true,
-        title: 'Categoria',
+        title: 'SubCategoria',
         dataIndex: 'name'
       },
       {
@@ -110,7 +107,7 @@ class EditableTable extends React.Component {
           this.state.dataSource.length >= 1 ? (
             <Popconfirm
               title="Sure to delete?"
-              onConfirm={() => this.handleDelete(record.id)}
+              onConfirm={() => this.handleDelete(record.id, record.category_id)}
             >
               <a>Delete</a>
             </Popconfirm>
@@ -118,13 +115,12 @@ class EditableTable extends React.Component {
       }
     ];
     this.state = {
-      dataSource: [],
-      // rowSelection object indicates the need for row selection,
-      currentCategorySelected: null,
+      dataSource: this.props.category.subcategories,
+      // rowSelection object indicates the need for row selection
       rowSelection: {
         onChange: (selectedRowKeys, selectedRows) => {
           // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-          this.setState({...this.state, currentCategorySelected: selectedRows[0]});
+          // setCurrentProduct(selectedRows[0]);
           // console.log(selectedRows[0]);
         },
         getCheckboxProps: record => ({
@@ -134,32 +130,32 @@ class EditableTable extends React.Component {
       }
     };
   }
-
-  componentWillMount() {
-    axios.get(`${URL_PRODUCTS}/category`).then(resp => {
-      console.log(resp.data.data);
-      this.setState({ ...this.state, dataSource: resp.data.data });
-    });
+  
+  componentDidUpdate(prevProps) {
+    // Uso típico, (não esqueça de comparar as props):
+    if (this.props.category !== prevProps.category) {
+      this.setState({...this.state, dataSource: this.props.category.subcategories})
+    }
   }
 
-  handleDelete = id => {
-    axios.delete(`${URL_PRODUCTS}/category/${id}`).then(resp => {
+  handleDelete = (id, category_id) => {
+    axios.delete(`${URL_PRODUCTS}/category/subcategory/${id}/${category_id}`).then(resp => {
       this.setState({ ...this.state, dataSource: resp.data.data });
     });
   };
   handleAdd = () => {
     const { count, dataSource } = this.state;
     const newData = {
-      name: `Nova Categoria`,
-      order: 0
+      name: `Nova SubCategoria`,
+      category_id: this.props.category.id
     };
-    axios.post(`${URL_PRODUCTS}/category`, newData).then(resp => {
+    axios.post(`${URL_PRODUCTS}/category/subcategory`, newData).then(resp => {
       this.setState({ ...this.state, dataSource: resp.data.data });
     });
   };
   handleSave = row => {
-    console.log('chamou', row);
-    axios.put(`${URL_PRODUCTS}/category`, row).then(resp => {
+    // console.log('chamou', row);
+    axios.put(`${URL_PRODUCTS}/category/subcategory`, row).then(resp => {
       this.setState({ ...this.state, dataSource: resp.data.data });
     });
   };
@@ -197,23 +193,16 @@ class EditableTable extends React.Component {
             marginBottom: 16
           }}
         >
-          Adicionar nova Categoria
+          Adicionar nova SubCategoria
         </Button>
         <Table
           rowKey={record => record.id}
           components={components}
           rowClassName={() => 'editable-row'}
           bordered
-          rowSelection={{
-            type: 'radio',
-            ...this.state.rowSelection
-          }}
           dataSource={dataSource}
           columns={columns}
         />
-        {
-          this.state.currentCategorySelected !== null ? <SubCategory category={this.state.currentCategorySelected} /> : null 
-        }
       </div>
     );
   }
