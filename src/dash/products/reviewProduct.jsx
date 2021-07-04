@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Form, Input, Button, Checkbox, Select } from 'antd';
 import { getDiscount } from '../../common/template/dependencies';
 import axios from 'axios';
+import { URL_PRODUCTS } from '../../common/template/urls';
 
 const layout = {
   labelCol: { span: 8 },
@@ -15,24 +16,43 @@ const tailLayoutItem = {
 };
 
 const ReviewProduct = props => {
-  const URL = 'http://localhost:8000/products';
   const [formProduct] = Form.useForm();
   const formRef = useRef(null);
   const [formState, setFormState] = useState(props.product);
+  const [categories, setCategories] = useState([]);
+
   const onFinish = values => {
-    // console.log(values)
-    console.log('Success:', { ...formProduct.getFieldValue(), ...values });
+    console.log('Success:', {
+      ...formProduct.getFieldValue(),
+      ...formState,
+      ...values
+    });
     axios
-      .put(URL, { ...formProduct.getFieldValue(), ...values })
+      .put(URL_PRODUCTS, {
+        ...formProduct.getFieldValue(),
+        ...formState,
+        ...values
+      })
       .then(resp => console.log(resp))
       .catch(error => console.log(error));
+  };
+
+  const getCategories = () => {
+    axios.get(`${URL_PRODUCTS}/category`).then(resp => {
+      setCategories(resp.data.data);
+      // console.log('categories', categories);
+    });
   };
 
   useEffect(() => {
     // console.log(props.product.id, formProduct.getFieldsValue().id)
     // console.log(props.product.id !== formProduct.getFieldsValue().id)
     setFormState(props.product);
-    if (formRef.current && props.product.id !== formProduct.getFieldsValue().id) {
+    getCategories();
+    if (
+      formRef.current &&
+      props.product.id !== formProduct.getFieldsValue().id
+    ) {
       formProduct.setFieldsValue(props.product);
     }
   }, [formRef, props.product]);
@@ -84,11 +104,28 @@ const ReviewProduct = props => {
           </Form.Item>
           <Form.Item
             label="Categoria"
-            name="category"
+            // name="category"
             rules={[{ required: true, message: 'Este campo é obrigatório' }]}
           >
-            <Select>
-              <Select.Option value="demo">Others</Select.Option>
+            <Select
+              onChange={value =>
+                setFormState({
+                  ...formState,
+                  category: {
+                    ...formState.category,
+                    id: value
+                  }
+                })
+              }
+              defaultValue={formState.category.category}
+            >
+              {categories.map((cat, index) => {
+                return (
+                  <Select.Option key={index} value={cat.id}>
+                    {cat.category}
+                  </Select.Option>
+                );
+              })}
             </Select>
           </Form.Item>
           <Form.Item label="Conteúdo" name="content">
@@ -144,8 +181,8 @@ const ReviewProduct = props => {
                   <option value="2">2</option>
                   <option value="3">3</option>
                   <option value="4">4</option>
-                  <option value="6">5</option>
-                  <option value="demo">6</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
                 </select>
               </div>
             </div>
@@ -205,11 +242,13 @@ const ReviewProduct = props => {
                       value={item.quantity}
                       onChange={e => {
                         item.quantity = parseInt(e.target.value);
-                        let sizes = formState.sizes.filter(
-                          currentItem =>
-                            item.product_id != currentItem.product_id
-                        );
-                        sizes.push(item);
+                        let sizes = formState.sizes.map(currentItem => {
+                          if (currentItem.id == item.id) {
+                            currentItem.quantity = parseInt(e.target.value);
+                          }
+                          return currentItem;
+                        });
+                        // sizes.push(item);
                         setFormState({ ...formState, sizes });
                       }}
                     />

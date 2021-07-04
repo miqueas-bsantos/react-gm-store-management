@@ -83,7 +83,7 @@ const Products = props => {
     onChange: (selectedRowKeys, selectedRows) => {
       // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
       setCurrentProduct(selectedRows[0]);
-      console.log(selectedRows[0])
+      console.log(selectedRows[0]);
     },
     getCheckboxProps: record => ({
       disabled: record.name === 'Disabled User', // Column configuration not to be checked
@@ -146,7 +146,7 @@ const Products = props => {
     console.log(product);
     axios.post(`${URL_PRODUCTS}`, product).then(resp => {
       setData(resp.data.data);
-      setCurrentProduct({})
+      setCurrentProduct({});
       // console.log(resp.data.data);
     });
   };
@@ -171,7 +171,7 @@ const Products = props => {
         pagination={{}}
         scroll={{ y: 500 }}
       />
-      <ReviewProduct product={{...currentProduct, row: rowSelection}} />
+      <ReviewProduct product={currentProduct} />
       {currentProduct.id >= 0 ? <UploadImage product={currentProduct} /> : null}
     </div>
   );
