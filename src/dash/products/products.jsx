@@ -153,14 +153,14 @@ const Products = props => {
           quantity: 0
         }
       ],
-      category: null,
-      quantity: 0,
+      subcategory: {
+        id: 1
+      },
       discount: [],
-      category: { id: 1 },
-      brand: 'GM',
+      brand: 'GMSTORE',
       tags: [],
-      isActive: true,
-      plan: 0
+      isActive: false,
+      plan: 1
     };
     console.log(product);
     axios.post(`${URL_PRODUCTS}`, product).then(resp => {
