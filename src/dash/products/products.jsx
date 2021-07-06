@@ -165,7 +165,7 @@ const Products = props => {
     console.log(product);
     axios.post(`${URL_PRODUCTS}`, product).then(resp => {
       setData(resp.data.data);
-      setCurrentProduct({});
+      // setCurrentProduct({});
       // console.log(resp.data.data);
     });
   };
